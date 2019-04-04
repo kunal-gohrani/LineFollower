@@ -43,9 +43,9 @@
 #define L_EN  11
 
 #define NO_OF_SENSORS   8
-#define diff_const      4
-#define kd 19 //changed this from 17 to 19
-#define baseMotorSpeed  90 //changed this from 70 to 90
+#define diff_const      9 //changed from 4 to 9
+#define kd 26 //changed this from 17 to 26
+#define baseMotorSpeed  100 //changed this from 70 to 100
 #define turnspeed       65
 
 uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0;
@@ -258,6 +258,7 @@ void detectLinePosition()
     {
 
         ruk();
+        difference=999;
         digitalWrite(LED,HIGH);
         delay(500);
         digitalWrite(LED,LOW);
@@ -267,7 +268,10 @@ void detectLinePosition()
     {
 
         ruk();
+        difference=999;
         digitalWrite(LED,HIGH);
+        delay(500);
+        digitalWrite(LED,LOW);
     }
     */
     else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
@@ -331,7 +335,7 @@ void controlMotors()
         readSensors();
         if(!((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1)))
         {
-          ruk();
+          //ruk();
           break;
         }
       }
@@ -344,7 +348,7 @@ void controlMotors()
         readSensors();
         if(!((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)))
         {
-          ruk();
+          //ruk();
           break;
         }
       }
