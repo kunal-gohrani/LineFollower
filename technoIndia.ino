@@ -19,6 +19,9 @@
    Note : Adjust your connections and wiring in such a way that for "front(leftMotorSpeed , rightMotorSpeed)" the motor moves in forward direction.
    Also , make sure that pins 0 ans 1 of arduino are not connected to anything before uploading the code.
 
+   If this program needs to be used on a white line with black background track then read the info given in the readSensors() function and change code accordingly
+
+
 */
 
 #define s1  A0
@@ -41,8 +44,8 @@
 
 #define NO_OF_SENSORS   8
 #define diff_const      4
-#define kd 17
-#define baseMotorSpeed  70
+#define kd 19 //changed this from 17 to 19
+#define baseMotorSpeed  90 //changed this from 70 to 90
 #define turnspeed       65
 
 uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0;
@@ -106,15 +109,24 @@ void prev()
     prev_val[i]=val[i];
   }
 }
-void readSensors() //read the sensor values
+void readSensors()
 {
+  //this function is to read the sensor values and store it in the "val" array
   //Serial.println("INREAD");
-
   int j;
   for (i = 0, j = 0; i < 8 ; i++, j++)
   {
     val[j] = digitalRead(sensors[i]);     //reading the values of the sensors
     //Serial.print(val[j]);
+    /* if used on white line with black background, uncomment the following statement(s) */
+    /*if(val[j]==0)
+    {
+        val[j]=1;
+    }else if(val[j]==1)
+    {
+        val[j]==0;
+    }*/
+
   }
   //Serial.println();
 
