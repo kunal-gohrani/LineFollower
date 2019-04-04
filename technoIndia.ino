@@ -91,7 +91,7 @@ void rotate_CW(int lms , int rms)
   analogWrite(L_EN , lms);
   analogWrite(R_EN , rms);
 }
-void ruk()
+void ruk() //stop motors
 {
   digitalWrite(LIN1, LOW);
   digitalWrite(LIN2, LOW);
@@ -100,12 +100,13 @@ void ruk()
 }
 void prev()
 {
+
   for(int i=0;i<NO_OF_SENSORS;i++)
   {
     prev_val[i]=val[i];
   }
 }
-void readSensors()
+void readSensors() //read the sensor values
 {
   //Serial.println("INREAD");
 
@@ -205,7 +206,7 @@ void detectLinePosition()
   else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
   {
     // when the bot goes out of the line
-    readSensors();
+    delay(5);
     readSensors();
     /*if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) && ((prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 0 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 1 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 0 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 0 && prev_val[3] == 0 && prev_val[4] == 1 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 1 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1)))
     {
@@ -234,13 +235,33 @@ void detectLinePosition()
   else if ((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
   {
     // when the bot reaches a checkpoint / a stop
-
+    prev(); //to store previous sensor values in a copy array
+    delay(50); //time to gauge whether it was a stop or checkpoint
     readSensors();
-    //if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0))
-    if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
+    /** Below if statement is for detection of stop on a black line
+    *  if wanna detect white stop line
+    * use the commented if condition
+    **/
+    if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==0 && val[1]==0 && val[2]==0 && val[3]==0 && val[4]==0 && val[5]==0 && val[6]==0 && val[7]==0))
+    {
+
+        ruk();
+        digitalWrite(LED,HIGH);
+        delay(500);
+        digitalWrite(LED,LOW);
+    }
+    /*
+    if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==1 && val[1]==1 && val[2]==1 && val[3]==1 && val[4]==1 && val[5]==1 && val[6]==1 && val[7]==1))
+    {
+
+        ruk();
+        digitalWrite(LED,HIGH);
+    }
+    */
+    else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
     {
       digitalWrite(LED,HIGH);
-      delay(40);
+      delay(20);
       digitalWrite(LED,LOW);
       difference = 0;
     }else
@@ -268,8 +289,8 @@ void controlMotors()
           //ruk();
           break;
         }
-
       }
+      error_dir = 0;
     }
     else if (difference == 9)
     {
@@ -284,6 +305,7 @@ void controlMotors()
           break;
         }
       }
+      error_dir = 0;
     }
     /*else if (difference == 999)
     {
@@ -335,8 +357,9 @@ void controlMotors()
       //Serial.println(leftMotorSpeed);
       //Serial.print("Right motor = ");
       //Serial.println(rightMotorSpeed);
-
       front(leftMotorSpeed , rightMotorSpeed);
+      if(D!=0)
+        delay(15);
       //delay(5000);
     }
 
@@ -346,8 +369,6 @@ void setup()
 {
 
   //Serial.begin(9600);
-  //TCCR2B = TCCR2B & B11111000 | B00000001;
-  //TCCR1B = TCCR1B & B11111000 | B00000001;
   for (i = 0 ; i < NO_OF_SENSORS ; i++)
     pinMode(sensors[i], INPUT);
 
