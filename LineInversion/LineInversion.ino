@@ -33,6 +33,7 @@
 #define s7  6
 #define s8  7
 #define LED A3
+#define INVERTED_MODE_LED 2
 
 #define RIN1  12
 #define RIN2  13
@@ -43,13 +44,15 @@
 #define L_EN  11
 
 #define NO_OF_SENSORS   8
-#define diff_const      3 //changed from 4 to 9
-#define kd 20 //changed this from 17 to 26
-#define baseMotorSpeed  75 //changed this from 70 to 100
-#define turnspeed       80 //changed from 65 to 809
+#define diff_const      9 //changed from 4-7-9
+#define kd 35 //changed this from 23-35
+#define ki 0.07
+#define baseMotorSpeed  100 //changed this from 70-95-100
+#define turnspeed       70
 
-uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0;
-int leftMotorSpeed = 0 , rightMotorSpeed = 0 ;
+uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0,I=0;
+int leftMotorSpeed = 0, rightMotorSpeed = 0;
+int invertedMode=0;
 
 void front(int lms , int rms)
 {
@@ -135,119 +138,40 @@ void readSensors()
 void detectLinePosition()
 {
   //Serial.println("In line");
-  if(val[0] ^ val[7])
-    error_dir = val[0] - val[7];
+    if(val[0] ^ val[7])
+        error_dir = val[0] - val[7];
 
-  if(difference!=999 && difference!=-10 && difference!=10 && difference!=9 && difference!=last_difference)
-  {
-    last_difference = difference;
-  }
-  if (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = -7;
-  //for a situation where there is left and straight line
-  else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
-  {
-      difference = -10;
-  }
-  //for a situation where there is right and straight line
-  else if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0))
-  {
-    difference = 10;
-    }
-  else if (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = -6;
-
-  else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
-
-    difference = -5;
-
-  else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = -5;
-
-  else if (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = -4;
-
-  else if (  (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
-
-    difference = -3;
-
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = -2;
-
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
-
-    difference = -1;
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-
-    difference = 0;
-
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
-
-    difference = 1;
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)
-
-    difference = 2;
-
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 1 && val[7] == 1) )
-
-    difference = 3;
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 1)
-
-    difference = 4;
-
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 1) )
-
-    difference = 5;
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)
-
-    difference = 6;
-
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)
-
-    difference = 7;
-
-
-   if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0))
-  {
-    // when the bot goes out of the line for white background
-    // bot will indicate a stop if on a black background
+    if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0))
+    {
+        // when the bot goes out of the line for white background
+        // bot will indicate a stop if on a black background
         if(invertedMode==0 && (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1))//indicates white background and bot goes out of Line
         {
             delay(30);
             readSensors();
             if(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
             {
-                if (error_dir < 0)
-                {
-                difference = -9;
-                }
-                else if (error_dir > 0)
-                {
-                difference = 9;
-                }
-                else
-                {
-                difference = 0;
-                }
+            if (error_dir < 0)
+            {
+            difference = -9;
+            }
+            else if (error_dir > 0)
+            {
+            difference = 9;
+            }
+            else
+            {
+            difference = 0;
+            }
             }else
             {
-                difference=0;
+            difference=0;
             }
         }
         else if(invertedMode==1)//indicates black background and need to stop bot or detect checkpoint
         {
             prev(); //to store previous sensor values in a copy array
-            delay(50); //time to gauge whether it was a stop or checkpoint
+            delay(30); //time to gauge whether it was a stop or checkpoint
             readSensors();
             /** Below if statement is for detection of stop on a black line
             *  if wanna detect white stop line
@@ -258,177 +182,261 @@ void detectLinePosition()
 
                 ruk();
                 difference=999;
-                digitalWrite(LED,LOW);
-                delay(500);
                 digitalWrite(LED,HIGH);
+                delay(500);
+                digitalWrite(LED,LOW);
             }
             else
             {
-              digitalWrite(LED,LOW);
-              delay(20);
-              digitalWrite(LED,HIGH);
-              difference = 0;
-          }
+                digitalWrite(LED,HIGH);
+                delay(20);
+                digitalWrite(LED,LOW);
+                difference = 0;
+            }
         }
 
-  }
-  if ((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
-  {
-      if(invertedMode==0)//white background checkpoint or stop
-      {
-        prev(); //to store previous sensor values in a copy array
-        delay(50); //time to gauge whether it was a stop or checkpoint
-        readSensors();
-        /** Below if statement is for detection of stop on a black line
-        *  if wanna detect white stop line
-        * use the commented if condition
-        **/
-        if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==0 && val[1]==0 && val[2]==0 && val[3]==0 && val[4]==0 && val[5]==0 && val[6]==0 && val[7]==0))
-        {
-
-            ruk();
-            difference=999;
-            digitalWrite(LED,HIGH);
-            delay(500);
-            digitalWrite(LED,LOW);
-        }
-        else
-        {
-            digitalWrite(LED,HIGH);
-            delay(20);
-            digitalWrite(LED,LOW);
-            difference = 0;
-        }
-      }
-      else if(invertedMode==1 && (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0))//indicates bot went out in black background case
-      {
-          delay(20);
-          readSensors();
-          if(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-          {
-              if (error_dir < 0)
-              {
-                  difference = -9;
-              }
-              else if (error_dir > 0)
-              {
-                  difference = 9;
-              }
-              else
-              {
-                  difference = 0;
-              }
-          }else
-          {
-              difference=0;
-          }
-      }
-  }
-    // when the bot reaches a checkpoint / a stop in white background
-
-    /*
-    if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==1 && val[1]==1 && val[2]==1 && val[3]==1 && val[4]==1 && val[5]==1 && val[6]==1 && val[7]==1))
-    {
-
-        ruk();
-        difference=999;
-        digitalWrite(LED,HIGH);
-        delay(500);
-        digitalWrite(LED,LOW);
     }
-    */
-    /*else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))*/
-
-/*}else
+    if ((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
     {
-      difference = 0;
-  }*/
-
-
-
-
-//For white Line
-
-
-
-
-
-
-
-if (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = -7;
-//for a situation where there is left and straight line
-else if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0))
-{
-    difference = -10;
-}
-//for a situation where there is right and straight line
-else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1))
-{
-  difference = 10;
-  }
-else if (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = -6;
-
-else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
-
-  difference = -5;
-
-else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = -5;
-
-else if (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = -4;
-
-else if (  (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
-
-  difference = -3;
-
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = -2;
-
-else if (  (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
-
-  difference = -1;
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0)
-
-  difference = 0;
-
-else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
-
-  difference = 1;
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)
-
-  difference = 2;
-
-else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 0 && val[7] == 0) )
-
-  difference = 3;
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0&& val[5] == 1 && val[6] == 1 && val[7] == 0)
-
-  difference = 4;
-
-else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 0) )
-
-  difference = 5;
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)
-
-  difference = 6;
-
-else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)
-
-  difference = 7;
-
+        if(invertedMode==0)//white background checkpoint or stop
+        {
+            prev(); //to store previous sensor values in a copy array
+            delay(30); //time to gauge whether it was a stop or checkpoint
+            readSensors();
+            /** Below if statement is for detection of stop on a black line
+            *  if wanna detect white stop line
+            * use the commented if condition
+            **/
+            if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==0 && val[1]==0 && val[2]==0 && val[3]==0 && val[4]==0 && val[5]==0 && val[6]==0 && val[7]==0))
+            {
+                ruk();
+                difference=999;
+                digitalWrite(LED,HIGH);
+                delay(500);
+                digitalWrite(LED,LOW);
+            }
+            else
+            {
+                digitalWrite(LED,HIGH);
+                delay(30);
+                digitalWrite(LED,LOW);
+                difference = 0;
+            }
+        }
+        else if(invertedMode==1 && (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0))//indicates bot went out in black background case
+        {
+            delay(20);
+            readSensors();
+            if(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+            {
+            if (error_dir < 0)
+            {
+            difference = -9;
+            }
+            else if (error_dir > 0)
+            {
+            difference = 9;
+            }
+            else
+            {
+            difference = 0;
+            }
+            }else
+            {
+            difference=0;
+            }
+        }
+    }
+    if(difference!=999 && difference!=-10 && difference!=10 && difference!=9 && difference!=last_difference)
+    {
+        last_difference = difference;
+    }
+    if (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference = -7;
+        //invertedMode=0;
+    }
+    //for a situation where there is left and straight line
+    else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
+    {
+        difference = -10;
+        //invertedMode=0;
+    }
+    //for a situation where there is right and straight line
+    else if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0))
+    {
+        difference = 10;
+        //invertedMode=0;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference = -6;
+        //invertedMode=0;
+    }
+    else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+    {
+        difference = -5;
+        //invertedMode=0;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference=-5;
+        //invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference = -4;
+        //invertedMode=0;
+    }
+    else if (  (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+    {
+        difference = -3;
+        invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference = -2;
+        invertedMode=0;
+    }
+    else if (  (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+    {
+        difference = -1;
+        invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+    {
+        difference = 0;
+        invertedMode=0;
+    }
+    else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+    {
+        difference = 1;
+        invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)
+    {
+        difference = 2;
+        invertedMode=0;
+    }
+    else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 1 && val[7] == 1) )
+    {
+        difference = 3;
+        invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 1)
+    {
+        difference = 4;
+        //invertedMode=0;
+    }
+    else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 1) )
+    {
+        difference = 5;
+        //invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)
+    {
+        difference = 6;
+        //invertedMode=0;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)
+    {
+        difference = 7;
+        //invertedMode=0;
+    }
+    // when the bot reaches a checkpoint / a stop in white background
+    /*else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))*/
+    if (val[0] == 1 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = -7;
+        //invertedMode=1;
+    }
+    //for a situation where there is left and straight line
+    else if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0))
+    {
+        difference = -10;
+        //invertedMode=1;
+    }
+    //for a situation where there is right and straight line
+    else if((val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1))
+    {
+        difference = 10;
+        //invertedMode=1;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = -6;
+        //invertedMode=1;
+    }
+    else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
+    {
+        difference = -5;
+        //invertedMode=1;
+    }
+    else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = -5;
+        //invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = -4;
+        //invertedMode=1;
+    }
+    else if (  (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
+    {
+        difference = -3;
+        invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = -2;
+        invertedMode=1;
+    }
+    else if (  (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
+    {
+        difference = -1;
+        invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0)
+    {
+        difference = 0;
+        invertedMode=1;
+    }
+    else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) )
+    {
+        difference = 1;
+        invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)
+    {
+        difference = 2;
+        invertedMode=1;
+    }
+    else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 0 && val[7] == 0) )
+    {
+        difference = 3;
+        invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0&& val[5] == 1 && val[6] == 1 && val[7] == 0)
+    {
+        difference = 4;
+        //invertedMode=1;
+    }
+    else if (  (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 0) )
+    {
+        difference = 5;
+        //invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)
+    {
+        difference = 6;
+        //invertedMode=1;
+    }
+    else if (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1)
+    {
+        difference = 7;
+        //invertedMode=1;
+    }
 }
 
 void controlMotors()
@@ -504,7 +512,9 @@ void controlMotors()
     {
       P=difference*diff_const;
       D=(difference-last_difference)*kd;
-      PID_value=P+D;
+      I=(I+difference)*ki;
+      I=constrain(I,-40,+40);
+      PID_value=P+D+I;
       leftMotorSpeed = baseMotorSpeed + PID_value;
       rightMotorSpeed = baseMotorSpeed - PID_value;
       //leftMotorSpeed = (leftMotorSpeed < 0) ? 0 : leftMotorSpeed;
@@ -539,6 +549,7 @@ void setup()
   pinMode(L_EN , OUTPUT);
   pinMode(LED,OUTPUT);
   pinMode(A5,OUTPUT);
+  pinMode(INVERTED_MODE_LED,OUTPUT);
   digitalWrite(A5,LOW);
 }
 
@@ -548,4 +559,12 @@ void loop()
   readSensors();
   detectLinePosition();
   controlMotors();
+  if(invertedMode==1)
+  {
+      digitalWrite(INVERTED_MODE_LED,HIGH);
+  }
+  else if(invertedMode==0)
+  {
+      digitalWrite(INVERTED_MODE_LED,LOW);
+  }
 }

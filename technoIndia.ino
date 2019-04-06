@@ -43,9 +43,9 @@
 #define L_EN  11
 
 #define NO_OF_SENSORS   8
-#define diff_const      7 //changed from 4 to 7
-#define kd 23 //changed this from 17 to 23
-#define baseMotorSpeed  95 //changed this from 70 to 95
+#define diff_const      9 //changed from 4-7-9
+#define kd 35 //changed this from 23-35
+#define baseMotorSpeed  100 //changed this from 70-95-100
 #define turnspeed       70
 
 uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0;
