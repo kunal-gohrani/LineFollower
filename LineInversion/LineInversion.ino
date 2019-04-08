@@ -44,15 +44,15 @@
 #define L_EN  11
 
 #define NO_OF_SENSORS   8
-#define diff_const      9 //changed from 4-7-9
-#define kd 35 //changed this from 23-35
-#define ki 0.07
-#define baseMotorSpeed  100 //changed this from 70-95-100
-#define turnspeed       70
+//#define diff_const      17//changed from 4-7-9-15-17
+//#define kd 90 //changed this from 23-35-55-65-90-95
+//#define baseMotorSpeed  100 //changed this from 70-95-110-115
+#define turnspeed       76
 
 uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0,I=0;
 int leftMotorSpeed = 0, rightMotorSpeed = 0;
 int invertedMode=0;
+int baseMotorSpeed=100,diff_const=17,kd=90;
 
 void front(int lms , int rms)
 {
@@ -134,23 +134,66 @@ void readSensors()
   //Serial.println();
 
 }
+void checkFor()
+{
+    if((val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0)|| (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0) || (val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0))
+    {
+        invertedMode=1;
+    }
+    else if((val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 1 && val[4] == 0 && val[5] == 0 && val[6] == 0 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1))
+    {
+        invertedMode=0;
+    }
+}
+
 
 void detectLinePosition()
 {
   //Serial.println("In line");
-    if(val[0] ^ val[7])
-        error_dir = val[0] - val[7];
-
-    if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0))
+    if(invertedMode==0)
     {
-        // when the bot goes out of the line for white background
-        // bot will indicate a stop if on a black background
-        if(invertedMode==0 && (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1))//indicates white background and bot goes out of Line
+        if(val[0] ^ val[7])
+            error_dir = val[0] - val[7];
+    }
+    if(invertedMode==1)
+    {   if(val[0] ^ val[7])
+            error_dir = val[7]-val[0];
+    }
+
+    //new ifss
+    if(invertedMode==1 && ((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 0)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 0 && val[7] == 0)||(val[0] == 0 && val[1] == 0 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 0 && val[1] == 0 && val[2] == 0 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 0 && val[6] == 0 && val[7] == 0)))
+    {
+        prev(); //to store previous sensor values in a copy array
+        delay(13); //time to gauge whether it was a stop or checkpoint
+        readSensors();
+        /** Below if statement is for detection of stop on a black line
+        *  if wanna detect white stop line
+        * use the commented if condition
+        **/
+        if((val[0]==prev_val[0] && val[1]==prev_val[1] && val[2]==prev_val[2] && val[3]==prev_val[3] && val[4]==prev_val[4] && val[5]==prev_val[5] && val[6]==prev_val[6] && val[7]==prev_val[7]) && (val[0]==1 && val[1]==1 && val[2]==1 && val[3]==1 && val[4]==1 && val[5]==1 && val[6]==1 && val[7]==1))
         {
-            delay(30);
-            readSensors();
-            if(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
-            {
+
+            //ruk();
+            difference=999;
+            digitalWrite(LED,HIGH);
+            delay(500);
+            digitalWrite(LED,LOW);
+        }
+        else
+        {
+            digitalWrite(LED,HIGH);
+            delay(5);
+            digitalWrite(LED,LOW);
+            //difference = 0;
+        }
+    }
+    else if(invertedMode==0 && (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1))//indicates white background/black line and bot goes out of Line
+    {
+        //delay(9);
+        readSensors();
+        detectLinePosition();
+        if(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+        {
             if (error_dir < 0)
             {
             difference = -9;

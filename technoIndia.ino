@@ -43,10 +43,10 @@
 #define L_EN  11
 
 #define NO_OF_SENSORS   8
-#define diff_const      9 //changed from 4-7-9
-#define kd 35 //changed this from 23-35
-#define baseMotorSpeed  100 //changed this from 70-95-100
-#define turnspeed       70
+#define diff_const      17//changed from 4-7-9-15-17
+#define kd 95 //changed this from 23-35-55-65-90
+#define baseMotorSpeed  115 //changed this from 70-95-110
+#define turnspeed       100
 
 uint8_t val[NO_OF_SENSORS] = {0, 0, 0, 0, 0, 0, 0, 0},prev_val[NO_OF_SENSORS]={0, 0, 0, 0, 0, 0, 0, 0}, sensors[NO_OF_SENSORS] = {s8, s7, s6, s5, s4, s3, s2, s1} , i = 0; int error_dir = 0; int difference = 0,last_difference = 0,stop = 0,PID_value=0,P=0,D=0;
 int leftMotorSpeed = 0 , rightMotorSpeed = 0 ;
@@ -117,15 +117,16 @@ void readSensors()
   for (i = 0, j = 0; i < 8 ; i++, j++)
   {
     val[j] = digitalRead(sensors[i]);     //reading the values of the sensors
-    //Serial.print(val[j]);
+
     /* if used on white line with black background, uncomment the following statement(s) */
     /*if(val[j]==0)
     {
         val[j]=1;
     }else if(val[j]==1)
     {
-        val[j]==0;
+        val[j]=0;
     }*/
+    //Serial.print(val[j]);
 
   }
   //Serial.println();
@@ -180,15 +181,15 @@ void detectLinePosition()
 
     difference = -2;
 
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 0 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
 
     difference = -1;
 
-  else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1)
+  else if ((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1)||(val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)|| (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1))
 
     difference = 0;
 
-  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1) || (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 0 && val[5] == 1 && val[6] == 1 && val[7] == 1) )
+  else if (  (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 0 && val[4] == 0 && val[5] == 0 && val[6] == 1 && val[7] == 1)  )
 
     difference = 1;
 
@@ -220,7 +221,6 @@ void detectLinePosition()
   else if (val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1)
   {
     // when the bot goes out of the line
-    delay(40);
     readSensors();
     /*if((val[0] == 1 && val[1] == 1 && val[2] == 1 && val[3] == 1 && val[4] == 1 && val[5] == 1 && val[6] == 1 && val[7] == 1) && ((prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 0 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 1 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 0 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 0 && prev_val[3] == 0 && prev_val[4] == 1 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1) || (prev_val[0] == 1 && prev_val[1] == 1 && prev_val[2] == 1 && prev_val[3] == 0 && prev_val[4] == 0 && prev_val[5] == 1 && prev_val[6] == 1 && prev_val[7] == 1)))
     {
@@ -409,5 +409,10 @@ void loop()
   //Serial.println("HI");
   readSensors();
   detectLinePosition();
+  //Serial.print("error_dir = ");
+  //Serial.println(error_dir);
+  //Serial.print("Difference = ");
+  //Serial.println(difference);
   controlMotors();
+  //delay(3000);
 }
